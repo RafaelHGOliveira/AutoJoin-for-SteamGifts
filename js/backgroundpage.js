@@ -404,9 +404,8 @@ const notify = async (type, msg) => {
   }
 };
 
-/* This function scans the pages and calls the function pagesloaded() once it finished
-   All giveaways that must be entered are pushed in an array called "arr"
-   Remember once scanpage is over, pagesloaded is called */
+/* This function scans a page and pushes eligible giveaways into arr[].
+   pagesloaded() must be called by the caller after all scanpage() calls complete. */
 const scanpage = async (html) => {
   const timePageLoaded = Math.round(Date.now() / 1000);
 

@@ -455,16 +455,6 @@ const scanpage = async (html) => {
     totalWishlistGAcnt = arr.length;
   }
   pagestemp--;
-  if (
-    pagestemp === 0 ||
-    (currPoints < settings.PointsToPreserve &&
-      useWishlistPriorityForMainBG &&
-      settings.IgnorePreserveWishlistOnMainBG &&
-      totalWishlistGAcnt !== 0)
-  ) {
-    pagestemp = 0;
-    pagesloaded();
-  }
 };
 
 /* This function is called once all pages have been parsed
@@ -492,7 +482,7 @@ function pagesloaded() {
 
   let timeouts = [];
 
-  for (const ga of arr) {
+  for (const [e, ga] of arr.entries()) {
     if (ga.level < settings.MinLevelBG) {
       // this may be unnecessary since level_min search parameter https://www.steamgifts.com/discussion/5WsxS/new-search-parameters
       continue;
@@ -662,7 +652,7 @@ const settingsloaded = async () => {
       currPoints >= settings.PointsToPreserve ||
       (useWishlistPriorityForMainBG && settings.IgnorePreserveWishlistOnMainBG)
     ) {
-      scanpage(html); // scan this page that was already loaded to get info above
+      await scanpage(html); // scan this page that was already loaded to get info above
       let i = 0;
       if (useWishlistPriorityForMainBG) {
         linkToUse = link;
@@ -676,9 +666,10 @@ const settingsloaded = async () => {
           } // no more than 3 pages at a time since the ban wave
           const res = await fetch(linkToUse + n);
           const newPage = await res.text();
-          scanpage(newPage);
+          await scanpage(newPage);
         }
       }
+      pagesloaded();
     }
   }
 };

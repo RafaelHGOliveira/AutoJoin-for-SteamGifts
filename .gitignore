@@ -1,2 +1,9 @@
 # Ignore compiled zip files
 AutoJoin_*.zip
+
+# Claude Code
+.claude/
+CLAUDE.md
+
+# Git worktrees
+.worktrees/

@@ -35,6 +35,7 @@ const parseHTML = (html) => {
     await setupOffscreenDocument('html/offscreen.html');
 
     const onDone = (result) => {
+      chrome.runtime.onMessage.removeListener(onDone);
       resolve(result);
     };
     chrome.runtime.onMessage.addListener(onDone);

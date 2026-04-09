@@ -143,18 +143,13 @@ const steamKeyRedeemResponses = {
   67: 'BundleTypeCannotBeGifted',
 };
 
-const findAndRedeemKeys = async (wonPage) => {
+const findAndRedeemKeys = async (keys) => {
   // Notifies about the steams response of a key sent to be redeemed
   const notifySteamCodeResponse = (info) => {
     notify('key', info);
   };
 
-  for (const keyBtn of wonPage.querySelectorAll('.view_key_btn')) {
-    // Get necessary data
-    const dataForm =
-      keyBtn.parentElement.nextElementSibling.querySelector('form');
-    const winnerId = dataForm.querySelector("input[name='winner_id']").value;
-    const xsrfToken = dataForm.querySelector("input[name='xsrf_token']").value;
+  for (const { winner_id: winnerId, xsrf_token: xsrfToken } of keys) {
     let latestSteamKeyRedeemResponse = ''; // for debugging
     let latestSteamGiftsKeyRequestResponse = ''; // for debugging
 
@@ -202,7 +197,7 @@ const findAndRedeemKeys = async (wonPage) => {
             }
           );
           if (res.ok) {
-            const data = res.json();
+            const data = await res.json();
             latestSteamKeyRedeemResponse = JSON.stringify(data); // for debugging
 
             const itemsList = data.purchase_receipt_info.line_items.map(
@@ -230,7 +225,7 @@ const findAndRedeemKeys = async (wonPage) => {
               formData.append('xsrf_token', xsrfToken);
               formData.append('do', 'received_feedback');
               formData.append('action', '1');
-              formData.append('winner_id', 'winnerId');
+              formData.append('winner_id', winnerId);
               const res = await fetch('https://www.steamgifts.com/ajax.php', {
                 method: 'post',
                 body: formData,
@@ -286,7 +281,7 @@ const findAndRedeemKeys = async (wonPage) => {
               );
             }
           } else {
-            `Error registering key on Steam: HTTP ${res.status}`;
+            console.error(`Error registering key on Steam: HTTP ${res.status}`);
           }
         } else {
           console.log(
@@ -345,21 +340,19 @@ const calculateWinChance = (
 
 const notify = async (type, msg) => {
   switch (type) {
-    case 'win':
+    case 'win': {
       const response = await fetch('https://www.steamgifts.com/giveaways/won');
       if (response.ok) {
-        wonPageHtml = await res.text();
-        const parser = new DOMParser();
-        const wonPage = parser.parseFromString(text, 'text/html');
-        const name = wonPage.querySelector(
-          '.table__column__heading'
-        ).textContent;
-
+        const wonPageHtml = await response.text();
+        const result = await parseHTML({
+          items: ['wonPageGameName', 'wonPageKeys'],
+          html: wonPageHtml,
+        });
         chrome.notifications.clear('won_notification', () => {
           const e = {
             type: 'basic',
             title: 'AutoJoin',
-            message: `You won ${name}! Click here to open Steamgifts.com`,
+            message: `You won ${result.wonPageGameName}! Click here to open Steamgifts.com`,
             iconUrl: chrome.runtime.getURL('./media/autologosteam.png'),
           };
           chrome.notifications.create('won_notification', e, () => {
@@ -374,7 +367,7 @@ const notify = async (type, msg) => {
           });
         });
         if (settings.AutoRedeemKey) {
-          findAndRedeemKeys(wonPage);
+          findAndRedeemKeys(result.wonPageKeys);
         }
       } else {
         console.error(
@@ -382,6 +375,7 @@ const notify = async (type, msg) => {
         );
       }
       break;
+    }
     case 'points':
       chrome.notifications.clear('points_notification', () => {
         const e = {
@@ -403,6 +397,7 @@ const notify = async (type, msg) => {
         };
         chrome.notifications.create('key_notification', e);
       });
+      break;
     default:
       console.log('Unknown notification type');
   }

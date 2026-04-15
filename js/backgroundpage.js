@@ -3,11 +3,16 @@
   modifications
 */
 
-importScripts('settingsManager.js');
+if (typeof importScripts === 'function') {
+  importScripts('settingsManager.js');
+  importScripts('parseHTML.js');
+}
 
 /* Offscreen weirdness, to use DOMParser and Audio with manifest v3...*/
 let creating;
 const setupOffscreenDocument = async (path) => {
+  if (!chrome.offscreen) return;
+
   const offscreenUrl = chrome.runtime.getURL(path);
   const existingContexts = await chrome.runtime.getContexts({
     contextTypes: ['OFFSCREEN_DOCUMENT'],
@@ -33,6 +38,10 @@ const setupOffscreenDocument = async (path) => {
 };
 
 const parseHTML = (html) => {
+  if (!chrome.offscreen) {
+    return Promise.resolve(parse(html));
+  }
+
   return new Promise(async (resolve, reject) => {
     await setupOffscreenDocument('html/offscreen.html');
 
@@ -51,6 +60,13 @@ const parseHTML = (html) => {
 };
 
 const playAudio = async (volume) => {
+  if (!chrome.offscreen) {
+    const audio = new Audio(chrome.runtime.getURL('/media/audio.mp3'));
+    audio.volume = volume;
+    audio.play();
+    return;
+  }
+
   await setupOffscreenDocument('html/offscreen.html');
   chrome.runtime.sendMessage({
     task: 'audio',

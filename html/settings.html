@@ -5,6 +5,7 @@
         <link rel="alternate stylesheet" href="../css/general.css" title="chromeOptions" />
         <link rel="stylesheet" href="../css/chromeOptions.css" title="chromeOptions" />
 
+        <script type="text/javascript" src="../js/settingsManager.js"></script>
         <script type="text/javascript" src="../js/settings.js"></script>
         <script type="text/javascript" src="../js/chromeOptions.js"></script>
     </head>
@@ -273,6 +274,12 @@
                             <span>Github Page</span>
                         </a>
                     </div>
+                </div>
+                <div id="accountImportExportRow">
+                    <label>Backup:</label>
+                    <button id="btnExportSettings" title="Download settings as a JSON file">Export</button>
+                    <button id="btnImportSettings" title="Load settings from a JSON file">Import</button>
+                    <input type="file" id="importFileInput" accept="application/json" style="display:none"/>
                 </div>
                 <div id="SaveCancelContainer">
                     <button id="btnSetSave">Save</button>

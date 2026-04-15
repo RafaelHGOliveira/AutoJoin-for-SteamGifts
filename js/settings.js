@@ -1,263 +1,227 @@
 // Call this function when #settingsDiv is present on the page.
-function loadSettings() {
-  chrome.storage.sync.get(
-    {
-      AutoJoinButton: false,
-      AutoDescription: true,
-      AutoComment: false,
-      Comment: '',
-      IgnoreGroups: false,
-      IgnorePinned: true,
-      IgnoreWhitelist: false,
-      IgnoreGroupsBG: false,
-      IgnorePinnedBG: true,
-      PageForBG: 'wishlist',
-      RepeatHoursBG: 5,
-      PagesToLoad: 3,
-      PagesToLoadBG: 2,
-      BackgroundAJ: false,
-      LevelPriorityBG: true,
-      OddsPriorityBG: false,
-      InfiniteScrolling: true,
-      ShowPoints: true,
-      ShowButtons: true,
-      LoadFive: false,
-      HideDlc: false,
-      HideEntered: false,
-      HideGroups: false,
-      HideNonTradingCards: false,
-      HideWhitelist: false,
-      HideLevelsBelow: 0,
-      HideCostsBelow: 0,
-      HideLevelsAbove: 10,
-      HideCostsAbove: 50,
-      PriorityGroup: false,
-      PriorityRegion: false,
-      PriorityWhitelist: false,
-      PriorityWishlist: true,
-      RepeatIfOnPage: false,
-      RepeatHours: 5,
-      NightTheme: false,
-      LevelPriority: false,
-      PlayAudio: true,
-      AudioVolume: 1,
-      Delay: 10,
-      DelayBG: 10,
-      MinLevelBG: 0,
-      MinCost: 0,
-      MinCostBG: 0,
-      MaxCost: -1,
-      MaxCostBG: -1,
-      PointsToPreserve: 0,
-      WishlistPriorityForMainBG: false,
-      IgnorePreserveWishlistOnMainBG: false,
-      ShowChance: true,
-      NotifyLimit: false,
-      NotifyLimitAmount: 300,
-      PreciseTime: false,
-      AutoRedeemKey: false,
-    },
-    (settings) => {
-      fillSettingsDiv(settings);
-    }
-  );
-}
 
-function fillSettingsDiv(settings) {
+function fillSettingsDiv(s) {
   document.getElementById('chkAutoJoinButton').checked =
-    settings.AutoJoinButton;
+    s.AutoJoinButton;
   document.getElementById('chkAutoDescription').checked =
-    settings.AutoDescription;
-  document.getElementById('chkAutoComment').checked = settings.AutoComment;
-  document.getElementById('txtAutoComment').value = settings.Comment;
+    s.AutoDescription;
+  document.getElementById('chkAutoComment').checked = s.AutoComment;
+  document.getElementById('txtAutoComment').value = s.Comment;
   document.getElementById('chkInfiniteScroll').checked =
-    settings.InfiniteScrolling;
-  document.getElementById('chkShowPoints').checked = settings.ShowPoints;
-  document.getElementById('chkShowButtons').checked = settings.ShowButtons;
-  document.getElementById('chkLoadFive').checked = settings.LoadFive;
-  document.getElementById('chkHideDlc').checked = settings.HideDlc;
-  document.getElementById('chkHideEntered').checked = settings.HideEntered;
-  document.getElementById('chkHideGroups').checked = settings.HideGroups;
+    s.InfiniteScrolling;
+  document.getElementById('chkShowPoints').checked = s.ShowPoints;
+  document.getElementById('chkShowButtons').checked = s.ShowButtons;
+  document.getElementById('chkLoadFive').checked = s.LoadFive;
+  document.getElementById('chkHideDlc').checked = s.HideDlc;
+  document.getElementById('chkHideEntered').checked = s.HideEntered;
+  document.getElementById('chkHideGroups').checked = s.HideGroups;
   document.getElementById('chkHideNonTradingCards').checked =
-    settings.HideNonTradingCards;
-  document.getElementById('chkHideWhitelist').checked = settings.HideWhitelist;
-  document.getElementById('hideLevelsBelow').value = settings.HideLevelsBelow;
-  document.getElementById('hideCostsBelow').value = settings.HideCostsBelow;
-  document.getElementById('hideLevelsAbove').value = settings.HideLevelsAbove;
-  document.getElementById('hideCostsAbove').value = settings.HideCostsAbove;
-  document.getElementById('chkNightTheme').checked = settings.NightTheme;
-  // document.getElementById("chkLevelPriority").checked = settings.LevelPriority;
+    s.HideNonTradingCards;
+  document.getElementById('chkHideWhitelist').checked = s.HideWhitelist;
+  document.getElementById('hideLevelsBelow').value = s.HideLevelsBelow;
+  document.getElementById('hideCostsBelow').value = s.HideCostsBelow;
+  document.getElementById('hideLevelsAbove').value = s.HideLevelsAbove;
+  document.getElementById('hideCostsAbove').value = s.HideCostsAbove;
+  document.getElementById('chkNightTheme').checked = s.NightTheme;
+  // document.getElementById("chkLevelPriority").checked = s.LevelPriority;
   document.getElementById('chkRepeatIfOnPage').checked =
-    settings.RepeatIfOnPage;
-  document.getElementById('chkIgnoreGroups').checked = settings.IgnoreGroups;
-  document.getElementById('chkIgnorePinned').checked = settings.IgnorePinned;
+    s.RepeatIfOnPage;
+  document.getElementById('chkIgnoreGroups').checked = s.IgnoreGroups;
+  document.getElementById('chkIgnorePinned').checked = s.IgnorePinned;
   document.getElementById('chkIgnoreWhitelist').checked =
-    settings.IgnoreWhitelist;
+    s.IgnoreWhitelist;
   document.getElementById('chkIgnoreGroupsBG').checked =
-    settings.IgnoreGroupsBG;
+    s.IgnoreGroupsBG;
   document.getElementById('chkIgnorePinnedBG').checked =
-    settings.IgnorePinnedBG;
-  document.getElementById('chkEnableBG').checked = settings.BackgroundAJ;
-  document.getElementById('chkGroupPriority').checked = settings.PriorityGroup;
+    s.IgnorePinnedBG;
+  document.getElementById('chkEnableBG').checked = s.BackgroundAJ;
+  document.getElementById('chkGroupPriority').checked = s.PriorityGroup;
   document.getElementById('chkRegionPriority').checked =
-    settings.PriorityRegion;
+    s.PriorityRegion;
   document.getElementById('chkWhitelistPriority').checked =
-    settings.PriorityWhitelist;
+    s.PriorityWhitelist;
   document.getElementById('chkWishlistPriority').checked =
-    settings.PriorityWishlist;
+    s.PriorityWishlist;
   document.getElementById('chkLevelPriorityBG').checked =
-    settings.LevelPriorityBG;
+    s.LevelPriorityBG;
   document.getElementById('chkOddsPriorityBG').checked =
-    settings.OddsPriorityBG;
-  document.getElementById('chkPlayAudio').checked = settings.PlayAudio;
-  document.getElementById('audioVolume').value = settings.AudioVolume;
-  document.getElementById('chkShowChance').checked = settings.ShowChance;
-  document.getElementById('hoursField').value = settings.RepeatHours;
-  document.getElementById('pagestoload').value = settings.PagesToLoad;
-  document.getElementById('pagestoloadBG').value = settings.PagesToLoadBG;
-  document.getElementById('pageforBG').value = settings.PageForBG;
-  document.getElementById('delayBG').value = settings.DelayBG;
-  document.getElementById('delay').value = settings.Delay;
-  document.getElementById('minLevelBG').value = settings.MinLevelBG;
-  document.getElementById('minCost').value = settings.MinCost;
-  document.getElementById('minCostBG').value = settings.MinCostBG;
-  document.getElementById('maxCost').value = settings.MaxCost;
-  document.getElementById('maxCostBG').value = settings.MaxCostBG;
-  document.getElementById('pointsToPreserve').value = settings.PointsToPreserve;
+    s.OddsPriorityBG;
+  document.getElementById('chkPlayAudio').checked = s.PlayAudio;
+  document.getElementById('audioVolume').value = s.AudioVolume;
+  document.getElementById('chkShowChance').checked = s.ShowChance;
+  document.getElementById('hoursField').value = s.RepeatHours;
+  document.getElementById('pagestoload').value = s.PagesToLoad;
+  document.getElementById('pagestoloadBG').value = s.PagesToLoadBG;
+  document.getElementById('pageforBG').value = s.PageForBG;
+  document.getElementById('delayBG').value = s.DelayBG;
+  document.getElementById('delay').value = s.Delay;
+  document.getElementById('minLevelBG').value = s.MinLevelBG;
+  document.getElementById('minCost').value = s.MinCost;
+  document.getElementById('minCostBG').value = s.MinCostBG;
+  document.getElementById('maxCost').value = s.MaxCost;
+  document.getElementById('maxCostBG').value = s.MaxCostBG;
+  document.getElementById('pointsToPreserve').value = s.PointsToPreserve;
   document.getElementById('chkWishlistPriorityForMainBG').checked =
-    settings.WishlistPriorityForMainBG;
+    s.WishlistPriorityForMainBG;
   document.getElementById('chkIgnorePreserveWishlistOnMainBG').checked =
-    settings.IgnorePreserveWishlistOnMainBG;
-  document.getElementById('chkNotifyLimit').checked = settings.NotifyLimit;
+    s.IgnorePreserveWishlistOnMainBG;
+  document.getElementById('chkNotifyLimit').checked = s.NotifyLimit;
   document.getElementById('notifyLimitAmount').value =
-    settings.NotifyLimitAmount;
-  document.getElementById('chkPreciseTime').checked = settings.PreciseTime;
-  if (settings.RepeatHoursBG === 0) {
+    s.NotifyLimitAmount;
+  document.getElementById('chkPreciseTime').checked = s.PreciseTime;
+  if (s.RepeatHoursBG === 0) {
     document.getElementById('hoursFieldBG').value = '0.5';
   } else {
-    document.getElementById('hoursFieldBG').value = settings.RepeatHoursBG;
+    document.getElementById('hoursFieldBG').value = s.RepeatHoursBG;
   }
-  document.getElementById('chkAutoRedeemKey').checked = settings.AutoRedeemKey;
+  document.getElementById('chkAutoRedeemKey').checked = s.AutoRedeemKey;
 
   settingsAttachEventListeners();
 }
 
+function readSettingsFromDOM() {
+  return {
+    AutoJoinButton: document.getElementById('chkAutoJoinButton').checked,
+    AutoDescription: document.getElementById('chkAutoDescription').checked,
+    AutoComment: document.getElementById('chkAutoComment').checked,
+    Comment: document.getElementById('txtAutoComment').value.trim(),
+    InfiniteScrolling: document.getElementById('chkInfiniteScroll').checked,
+    ShowPoints: document.getElementById('chkShowPoints').checked,
+    ShowButtons: document.getElementById('chkShowButtons').checked,
+    LoadFive: document.getElementById('chkLoadFive').checked,
+    HideDlc: document.getElementById('chkHideDlc').checked,
+    HideEntered: document.getElementById('chkHideEntered').checked,
+    HideGroups: document.getElementById('chkHideGroups').checked,
+    HideNonTradingCards: document.getElementById('chkHideNonTradingCards').checked,
+    HideWhitelist: document.getElementById('chkHideWhitelist').checked,
+    HideLevelsBelow: parseInt(document.getElementById('hideLevelsBelow').value, 10),
+    HideCostsBelow: parseInt(document.getElementById('hideCostsBelow').value, 10),
+    HideLevelsAbove: parseInt(document.getElementById('hideLevelsAbove').value, 10),
+    HideCostsAbove: parseInt(document.getElementById('hideCostsAbove').value, 10),
+    RepeatIfOnPage: document.getElementById('chkRepeatIfOnPage').checked,
+    NightTheme: document.getElementById('chkNightTheme').checked,
+    // LevelPriority: document.getElementById("chkLevelPriority").checked,
+    LevelPriorityBG: document.getElementById('chkLevelPriorityBG').checked,
+    OddsPriorityBG: document.getElementById('chkOddsPriorityBG').checked,
+    BackgroundAJ: document.getElementById('chkEnableBG').checked,
+    PriorityGroup: document.getElementById('chkGroupPriority').checked,
+    PriorityRegion: document.getElementById('chkRegionPriority').checked,
+    PriorityWhitelist: document.getElementById('chkWhitelistPriority').checked,
+    PriorityWishlist: document.getElementById('chkWishlistPriority').checked,
+    IgnoreGroups: document.getElementById('chkIgnoreGroups').checked,
+    IgnorePinned: document.getElementById('chkIgnorePinned').checked,
+    IgnoreWhitelist: document.getElementById('chkIgnoreWhitelist').checked,
+    IgnoreGroupsBG: document.getElementById('chkIgnoreGroupsBG').checked,
+    IgnorePinnedBG: document.getElementById('chkIgnorePinnedBG').checked,
+    PlayAudio: document.getElementById('chkPlayAudio').checked,
+    AudioVolume: document.getElementById('audioVolume').value,
+    RepeatHours: document.getElementById('hoursField').value,
+    RepeatHoursBG: parseInt(document.getElementById('hoursFieldBG').value, 10),
+    PagesToLoad: parseInt(document.getElementById('pagestoload').value, 10),
+    PagesToLoadBG: parseInt(document.getElementById('pagestoloadBG').value, 10),
+    PageForBG: document.getElementById('pageforBG').value,
+    DelayBG: parseInt(document.getElementById('delayBG').value, 10),
+    Delay: parseInt(document.getElementById('delay').value, 10),
+    MinLevelBG: parseInt(document.getElementById('minLevelBG').value, 10),
+    MinCost: parseInt(document.getElementById('minCost').value, 10),
+    MinCostBG: parseInt(document.getElementById('minCostBG').value, 10),
+    MaxCost: parseInt(document.getElementById('maxCost').value, 10),
+    MaxCostBG: parseInt(document.getElementById('maxCostBG').value, 10),
+    PointsToPreserve: parseInt(document.getElementById('pointsToPreserve').value, 10),
+    WishlistPriorityForMainBG: document.getElementById('chkWishlistPriorityForMainBG').checked,
+    IgnorePreserveWishlistOnMainBG: document.getElementById('chkIgnorePreserveWishlistOnMainBG').checked,
+    ShowChance: document.getElementById('chkShowChance').checked,
+    NotifyLimit: document.getElementById('chkNotifyLimit').checked,
+    NotifyLimitAmount: document.getElementById('notifyLimitAmount').value,
+    PreciseTime: document.getElementById('chkPreciseTime').checked,
+    AutoRedeemKey: document.getElementById('chkAutoRedeemKey').checked,
+  };
+}
+
 function settingsAttachEventListeners() {
   const saveButtonEl = document.getElementById('btnSetSave');
-  saveButtonEl.addEventListener('click', () => {
-    chrome.storage.sync.set(
-      {
-        AutoJoinButton: document.getElementById('chkAutoJoinButton').checked,
-        AutoDescription: document.getElementById('chkAutoDescription').checked,
-        AutoComment: document.getElementById('chkAutoComment').checked,
-        Comment: document.getElementById('txtAutoComment').value.trim(),
-        InfiniteScrolling: document.getElementById('chkInfiniteScroll').checked,
-        ShowPoints: document.getElementById('chkShowPoints').checked,
-        ShowButtons: document.getElementById('chkShowButtons').checked,
-        LoadFive: document.getElementById('chkLoadFive').checked,
-        HideDlc: document.getElementById('chkHideDlc').checked,
-        HideEntered: document.getElementById('chkHideEntered').checked,
-        HideGroups: document.getElementById('chkHideGroups').checked,
-        HideNonTradingCards: document.getElementById('chkHideNonTradingCards')
-          .checked,
-        HideWhitelist: document.getElementById('chkHideWhitelist').checked,
-        HideLevelsBelow: parseInt(
-          document.getElementById('hideLevelsBelow').value,
-          10
-        ),
-        HideCostsBelow: parseInt(
-          document.getElementById('hideCostsBelow').value,
-          10
-        ),
-        HideLevelsAbove: parseInt(
-          document.getElementById('hideLevelsAbove').value,
-          10
-        ),
-        HideCostsAbove: parseInt(
-          document.getElementById('hideCostsAbove').value,
-          10
-        ),
-        RepeatIfOnPage: document.getElementById('chkRepeatIfOnPage').checked,
-        NightTheme: document.getElementById('chkNightTheme').checked,
-        // LevelPriority: document.getElementById("chkLevelPriority").checked,
-        LevelPriorityBG: document.getElementById('chkLevelPriorityBG').checked,
-        OddsPriorityBG: document.getElementById('chkOddsPriorityBG').checked,
-        BackgroundAJ: document.getElementById('chkEnableBG').checked,
-        PriorityGroup: document.getElementById('chkGroupPriority').checked,
-        PriorityRegion: document.getElementById('chkRegionPriority').checked,
-        PriorityWhitelist: document.getElementById('chkWhitelistPriority')
-          .checked,
-        PriorityWishlist: document.getElementById('chkWishlistPriority')
-          .checked,
-        IgnoreGroups: document.getElementById('chkIgnoreGroups').checked,
-        IgnorePinned: document.getElementById('chkIgnorePinned').checked,
-        IgnoreWhitelist: document.getElementById('chkIgnoreWhitelist').checked,
-        IgnoreGroupsBG: document.getElementById('chkIgnoreGroupsBG').checked,
-        IgnorePinnedBG: document.getElementById('chkIgnorePinnedBG').checked,
-        PlayAudio: document.getElementById('chkPlayAudio').checked,
-        AudioVolume: document.getElementById('audioVolume').value,
-        RepeatHours: document.getElementById('hoursField').value,
-        RepeatHoursBG: parseInt(
-          document.getElementById('hoursFieldBG').value,
-          10
-        ),
-        PagesToLoad: parseInt(document.getElementById('pagestoload').value, 10),
-        PagesToLoadBG: parseInt(
-          document.getElementById('pagestoloadBG').value,
-          10
-        ),
-        PageForBG: document.getElementById('pageforBG').value,
-        DelayBG: parseInt(document.getElementById('delayBG').value, 10),
-        Delay: parseInt(document.getElementById('delay').value, 10),
-        MinLevelBG: parseInt(document.getElementById('minLevelBG').value, 10),
-        MinCost: parseInt(document.getElementById('minCost').value, 10),
-        MinCostBG: parseInt(document.getElementById('minCostBG').value, 10),
-        MaxCost: parseInt(document.getElementById('maxCost').value, 10),
-        MaxCostBG: parseInt(document.getElementById('maxCostBG').value, 10),
-        PointsToPreserve: parseInt(
-          document.getElementById('pointsToPreserve').value,
-          10
-        ),
-        WishlistPriorityForMainBG: document.getElementById(
-          'chkWishlistPriorityForMainBG'
-        ).checked,
-        IgnorePreserveWishlistOnMainBG: document.getElementById(
-          'chkIgnorePreserveWishlistOnMainBG'
-        ).checked,
-        ShowChance: document.getElementById('chkShowChance').checked,
-        NotifyLimit: document.getElementById('chkNotifyLimit').checked,
-        NotifyLimitAmount: document.getElementById('notifyLimitAmount').value,
-        PreciseTime: document.getElementById('chkPreciseTime').checked,
-        AutoRedeemKey: document.getElementById('chkAutoRedeemKey').checked,
-      },
-      () => {
-        if (
-          document.location.protocol !== 'http:' &&
-          document.location.protocol !== 'https:'
-        ) {
-          saveButtonEl.innerText = 'Settings Saved!';
-          saveButtonEl.disabled = true;
-          setTimeout(() => {
-            saveButtonEl.innerText = 'Save';
-            saveButtonEl.disabled = false;
-          }, 500);
-        } else {
-          window.location.reload();
-        }
+  saveButtonEl.onclick = () => {
+    const settingsToSave = readSettingsFromDOM();
+    saveSettings(settingsToSave, () => {
+      if (
+        document.location.protocol !== 'http:' &&
+        document.location.protocol !== 'https:'
+      ) {
+        saveButtonEl.innerText = 'Settings Saved!';
+        saveButtonEl.disabled = true;
+        setTimeout(() => {
+          saveButtonEl.innerText = 'Save';
+          saveButtonEl.disabled = false;
+        }, 500);
+      } else {
+        window.location.reload();
       }
-    );
-  });
+    });
+  };
+
+  // Export settings to a JSON file
+  const btnExport = document.getElementById('btnExportSettings');
+  if (btnExport) {
+    btnExport.onclick = () => {
+      const exportSettings = readSettingsFromDOM();
+      delete exportSettings.LastKnownLevel;
+      const payload = {
+        version: 1,
+        type: 'autojoin-sg-account-settings',
+        exportedAt: new Date().toISOString(),
+        settings: exportSettings,
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `autojoin-settings-${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+  }
+
+  // Import settings from a JSON file
+  const btnImport = document.getElementById('btnImportSettings');
+  const fileInput = document.getElementById('importFileInput');
+  if (btnImport && fileInput) {
+    btnImport.onclick = () => fileInput.click();
+    fileInput.onchange = (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const data = JSON.parse(ev.target.result);
+          if (data.type !== 'autojoin-sg-account-settings' || !data.settings) {
+            alert('Invalid file format.');
+            return;
+          }
+          // eslint-disable-next-line no-restricted-globals
+          if (!confirm('Overwrite current settings with imported data?')) {
+            return;
+          }
+          const merged = { ...getSettingsDefaults(), ...data.settings };
+          saveSettings(merged, () => {
+            fillSettingsDiv(merged);
+            alert('Settings imported.');
+          });
+        } catch (err) {
+          alert(`Failed to import: ${err.message}`);
+        } finally {
+          fileInput.value = '';
+        }
+      };
+      reader.readAsText(file);
+    };
+  }
 
   // grant "*://steamcommunity.com/profiles/*" permission
-  document
-    .getElementById('chkWishlistPriority')
-    .addEventListener('change', requirePermissions);
-  document
-    .getElementById('chkHideNonTradingCards')
-    .addEventListener('change', requirePermissions);
-  document
-    .getElementById('chkHideDlc')
-    .addEventListener('change', requirePermissions);
+  document.getElementById('chkWishlistPriority').onchange = requirePermissions;
+  document.getElementById('chkHideNonTradingCards').onchange = requirePermissions;
+  document.getElementById('chkHideDlc').onchange = requirePermissions;
   function requirePermissions(e) {
     if (e.target.checked) {
       // chrome.permissions.* API is not available in content script
@@ -300,7 +264,7 @@ function settingsAttachEventListeners() {
   });
 
   const volumeSlider = document.getElementById('audioVolume');
-  volumeSlider.addEventListener('click', setAudioVolume);
+  volumeSlider.onclick = setAudioVolume;
 
   processDependentSettings();
 }
@@ -345,6 +309,6 @@ function processDependentSettings() {
 
     fitSettings();
   }
-  AutoJoinButton.addEventListener('change', evalDependent);
-  EnableBG.addEventListener('change', evalDependent);
+  AutoJoinButton.onchange = evalDependent;
+  EnableBG.onchange = evalDependent;
 }

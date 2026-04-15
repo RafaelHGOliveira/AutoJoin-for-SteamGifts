@@ -338,70 +338,10 @@ if (document.readyState === 'loading') {
 }
 
 function getSettings() {
-  chrome.storage.sync.get(
-    {
-      lastLaunchedVersion: thisVersion,
-    },
-    () => {
-      chrome.storage.sync.get(
-        {
-          AutoJoinButton: false,
-          AutoDescription: true,
-          AutoComment: false,
-          Comment: '',
-          IgnoreGroups: false,
-          IgnorePinned: true,
-          IgnoreWhitelist: false,
-          IgnoreGroupsBG: false,
-          IgnorePinnedBG: true,
-          PageForBG: 'wishlist',
-          RepeatHoursBG: 5,
-          PagesToLoad: 3,
-          PagesToLoadBG: 2,
-          BackgroundAJ: false,
-          LevelPriorityBG: true,
-          OddsPriorityBG: false,
-          lastLaunchedVersion: thisVersion,
-          InfiniteScrolling: true,
-          ShowPoints: true,
-          ShowButtons: true,
-          LoadFive: false,
-          HideDlc: false,
-          HideEntered: false,
-          HideGroups: false,
-          HideNonTradingCards: false,
-          HideWhitelist: false,
-          HideLevelsBelow: 0,
-          HideCostsBelow: 0,
-          HideLevelsAbove: 10,
-          HideCostsAbove: 50,
-          PriorityGroup: false,
-          PriorityRegion: false,
-          PriorityWhitelist: false,
-          PriorityWishlist: true,
-          RepeatIfOnPage: false,
-          RepeatHours: 5,
-          NightTheme: false,
-          LevelPriority: false,
-          PlayAudio: true,
-          AudioVolume: 1,
-          DelayBG: 10,
-          Delay: 10,
-          MinLevelBG: 0,
-          MinCost: 0,
-          MinCostBG: 0,
-          MaxCost: -1,
-          MaxCostBG: -1,
-          ShowChance: true,
-          PreciseTime: false,
-        },
-        (data) => {
-          settings = data;
-          loadCache();
-        }
-      );
-    }
-  );
+  chrome.storage.sync.get(getSettingsDefaults(), (data) => {
+    settings = { ...getSettingsDefaults(), ...data };
+    loadCache();
+  });
 }
 
 function loadCache() {
@@ -580,7 +520,7 @@ function onPageLoad() {
           const settingsDOM = parser.parseFromString(settingsHTML, 'text/html');
           const settingsDiv = settingsDOM.getElementById('bodyWrapper');
           document.querySelector('body').appendChild(settingsDiv);
-          loadSettings();
+          getSettings(fillSettingsDiv);
           document.getElementById('settingsShade').classList.add('fadeIn');
           document.getElementById('settingsDiv').classList.add('fadeIn');
         });

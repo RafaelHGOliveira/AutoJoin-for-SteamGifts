@@ -1,3 +1,3 @@
 document.addEventListener('DOMContentLoaded', () => {
-  loadSettings();
+  getSettings(fillSettingsDiv);
 });

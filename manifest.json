@@ -1,4 +1,5 @@
 {
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAm/FQjecKEYQPsR+QswcsO4zN8TGAhkJVRR3fVSk28RSIXyDq8RXBHvGVJZnubt6YCX5N3ub/YWAsP+IrOnBkJ5UiEEZ0ldcRXPqmtKqX6XPYwKO4D2U2OKgVq9lLqOo3zP4P1r8dnQWz0c6DAbLpvN5IMA9/J8HLTKzUOOfPfHtJMiWvxGzrPpm17ctmIWp3yN82BZtkoyOxuOSiKqxfK+piQRpXGecQsl8SfIcI6WKx7zxbuFanM3D9SkMUtl5wCatDixcbw9Jnk4df2/tBCjYIBagKbLo4+eN+ARf9G4pUjnA8PV+fc9vAk0v67qVSOd+e4ZeSKtDJMb/76uSDPwIDAQAB",
   "background": {
     "service_worker": "js/backgroundpage.js"
   },
@@ -7,6 +8,7 @@
       "run_at": "document_start",
       "css": ["css/general.css"],
       "js": [
+        "js/settingsManager.js",
         "js/autoentry.js",
         "js/misc.js",
         "js/settings.js"
@@ -83,7 +85,7 @@
     "*://store.steampowered.com/*"
   ],
   "optional_host_permissions": ["*://steamcommunity.com/profiles/*"],
-  "version": "1.10.8",
+  "version": "1.10.9",
   "web_accessible_resources": [{
     "use_dynamic_url": true,
     "resources": ["html/settings.html", "css/night.css", "media/audio.mp3"],

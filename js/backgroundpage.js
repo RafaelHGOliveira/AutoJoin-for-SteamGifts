@@ -1,7 +1,9 @@
-/* 
+/*
   This script page is the background script. autoentry.js is the autojoin button and other page
   modifications
 */
+
+importScripts('settingsManager.js');
 
 /* Offscreen weirdness, to use DOMParser and Audio with manifest v3...*/
 let creating;
@@ -72,6 +74,7 @@ let thisVersion = 20170929;
 let totalWishlistGAcnt = 0;
 let useWishlistPriorityForMainBG = false;
 let currPoints = 0;
+
 
 const steamKeyRedeemResponses = {
   0: 'NoDetail',
@@ -357,14 +360,9 @@ const notify = async (type, msg) => {
             iconUrl: chrome.runtime.getURL('./media/autologosteam.png'),
           };
           chrome.notifications.create('won_notification', e, () => {
-            chrome.storage.sync.get(
-              { PlayAudio: 'true', AudioVolume: 1 },
-              (data) => {
-                if (data.PlayAudio === true) {
-                  playAudio(data.AudioVolume);
-                }
-              }
-            );
+            if (settings.PlayAudio === true) {
+              playAudio(settings.AudioVolume);
+            }
           });
         });
         if (settings.AutoRedeemKey) {
@@ -456,9 +454,9 @@ const scanpage = async (html) => {
   pagestemp--;
 };
 
-/* This function is called once all pages have been parsed
-   this sends the requests to steamgifts */
-function pagesloaded() {
+/* This function is called once all pages have been parsed.
+   Sends entry requests to steamgifts sequentially with delay. */
+const pagesloaded = async () => {
   let wishlistArr;
   if (useWishlistPriorityForMainBG) {
     wishlistArr = arr.slice(0, totalWishlistGAcnt);
@@ -479,8 +477,6 @@ function pagesloaded() {
     arr = wishlistArr.concat(arr);
   }
 
-  let timeouts = [];
-
   for (const [e, ga] of arr.entries()) {
     if (ga.level < settings.MinLevelBG) {
       // this may be unnecessary since level_min search parameter https://www.steamgifts.com/discussion/5WsxS/new-search-parameters
@@ -493,7 +489,7 @@ function pagesloaded() {
       );
       continue;
     }
-    if (settings.MaxCostBG != -1 && ga.cost > settings.MaxCostBG) {
+    if (settings.MaxCostBG !== -1 && ga.cost > settings.MaxCostBG) {
       ga.showInfo();
       console.log(
         `^Skipped, cost: ${ga.cost}, your settings.MaxCostBG is ${settings.MaxCostBG}`
@@ -508,48 +504,39 @@ function pagesloaded() {
       continue;
     }
 
-    timeouts.push(
-      setTimeout(async () => {
-        const formData = new FormData();
-        formData.append('xsrf_token', token);
-        formData.append('do', 'entry_insert');
-        formData.append('code', ga.code);
-
-        const res = await fetch('https://www.steamgifts.com/ajax.php', {
-          method: 'post',
-          body: formData,
-        });
-        const jsonResponse = await res.json();
-        ga.showInfo();
-
-        let clearTimeouts = false;
-        if (jsonResponse.msg === 'Not Enough Points') {
-          clearTimeouts = true;
-        } else if (
-          jsonResponse.points < settings.PointsToPreserve &&
-          useWishlistPriorityForMainBG &&
-          settings.IgnorePreserveWishlistOnMainBG
-        ) {
-          if (totalWishlistGAcnt === 1 || e > totalWishlistGAcnt - 2) {
-            clearTimeouts = true;
-          }
-        }
-
-        if (clearTimeouts) {
-          console.log(
-            "^Not Enough Points or your PointsToPreserve limit reached, we're done for now"
-          );
-          for (let i = 0; i < timeouts.length; i++) {
-            clearTimeout(timeouts[i]);
-          }
-          timeouts = [];
-        } else {
-          console.log('^Entered');
-        }
-      }, (timeouts.length + 1) * settings.DelayBG * 1000 + Math.floor(Math.random() * 2001))
+    await new Promise((resolve) =>
+      setTimeout(resolve, settings.DelayBG * 1000 + Math.floor(Math.random() * 2001))
     );
+
+    const formData = new FormData();
+    formData.append('xsrf_token', token);
+    formData.append('do', 'entry_insert');
+    formData.append('code', ga.code);
+
+    const res = await fetch('https://www.steamgifts.com/ajax.php', {
+      method: 'post',
+      body: formData,
+    });
+    const jsonResponse = await res.json();
+    ga.showInfo();
+
+    if (jsonResponse.msg === 'Not Enough Points') {
+      console.log("^Not Enough Points, we're done for now");
+      break;
+    }
+    if (
+      jsonResponse.points < settings.PointsToPreserve &&
+      useWishlistPriorityForMainBG &&
+      settings.IgnorePreserveWishlistOnMainBG
+    ) {
+      if (totalWishlistGAcnt === 1 || e > totalWishlistGAcnt - 2) {
+        console.log("^PointsToPreserve limit reached, we're done for now");
+        break;
+      }
+    }
+    console.log('^Entered');
   }
-}
+};
 
 /* This function checks for a won gift, then calls the scanpage function */
 /* e is the whole html page */
@@ -601,16 +588,17 @@ const settingsloaded = async () => {
     // check level and save if changed
     mylevel = result.myLevel;
     if (settings.LastKnownLevel !== mylevel) {
-      chrome.storage.sync.set({ LastKnownLevel: mylevel });
+      settings.LastKnownLevel = mylevel;
+      await new Promise((resolve) => saveSettings(settings, resolve));
     }
   } else {
     /* Else check if won first (since pop-up disappears after first view), then start scanning pages */
     timepassed = 0; // reset timepassed
-    const link = `https://www.steamgifts.com/giveaways/search?type=${settings.PageForBG}&level_min=${settings.MinLevelBG}&level_max=${settings.LastKnownLevel}&page=`;
+    const bgLink = `https://www.steamgifts.com/giveaways/search?type=${settings.PageForBG}&level_min=${settings.MinLevelBG}&level_max=${settings.LastKnownLevel}&page=`;
     const wishLink = `https://www.steamgifts.com/giveaways/search?type=wishlist&level_min=${settings.MinLevelBG}&level_max=${settings.LastKnownLevel}&page=`;
     let linkToUse = '';
     if (useWishlistPriorityForMainBG) linkToUse = wishLink;
-    else linkToUse = link;
+    else linkToUse = bgLink;
     arr.length = 0;
 
     const res = await fetch(linkToUse + 1);
@@ -643,10 +631,10 @@ const settingsloaded = async () => {
     mylevel = result.myLevel;
     // save new level if it changed
     if (settings.LastKnownLevel !== mylevel) {
-      chrome.storage.sync.set({ LastKnownLevel: mylevel });
+      settings.LastKnownLevel = mylevel;
+      await new Promise((resolve) => saveSettings(settings, resolve));
     }
 
-    // var numOfGAsOnPage = parseInt($(data).find('.pagination__results').children().next().text(), 10);
     if (
       currPoints >= settings.PointsToPreserve ||
       (useWishlistPriorityForMainBG && settings.IgnorePreserveWishlistOnMainBG)
@@ -654,7 +642,7 @@ const settingsloaded = async () => {
       await scanpage(html); // scan this page that was already loaded to get info above
       let i = 0;
       if (useWishlistPriorityForMainBG) {
-        linkToUse = link;
+        linkToUse = bgLink;
         i = 1;
       }
       if (currPoints >= settings.PointsToPreserve) {
@@ -668,49 +656,25 @@ const settingsloaded = async () => {
           await scanpage(newPage);
         }
       }
-      pagesloaded();
+      await pagesloaded();
     }
   }
 };
 
 /* Load settings, then call settingsloaded() */
-const loadsettings = () => {
-  chrome.storage.sync.get(
-    {
-      PageForBG: 'wishlist',
-      RepeatHoursBG: 5,
-      DelayBG: 10,
-      MaxTimeLeftBG: 0, // in seconds
-      MinLevelBG: 0,
-      MinCostBG: 0,
-      MaxCostBG: -1,
-      PointsToPreserve: 0,
-      WishlistPriorityForMainBG: false,
-      IgnorePreserveWishlistOnMainBG: false,
-      PagesToLoadBG: 2,
-      BackgroundAJ: false,
-      LevelPriorityBG: true,
-      OddsPriorityBG: false,
-      IgnoreGroupsBG: false,
-      IgnorePinnedBG: true,
-      LastKnownLevel: 10, // set to 10 by default so it loads pages with max_level set to 10 (maximum) before extensions learns actual level
-      NotifyLimit: false,
-      NotifyLimitAmount: 300,
-      AutoRedeemKey: false,
-      lastLaunchedVersion: thisVersion,
-    },
-    (data) => {
+const loadsettings = () =>
+  new Promise((resolve) => {
+    getSettings(async (data) => {
       settings = data;
-      settingsloaded();
-    }
-  );
-};
+      await settingsloaded();
+      resolve();
+    });
+  });
 
-/* It all begins with the loadsettings call */
-chrome.alarms.onAlarm.addListener((alarm) => {
+chrome.alarms.onAlarm.addListener(async (alarm) => {
   console.log(`Alarm fired. ${new Date().toLocaleString()}`);
   if (alarm.name === 'routine') {
-    loadsettings();
+    await loadsettings();
   }
 });
 
@@ -886,11 +850,10 @@ const fetchHelper = async (url) => {
         'Disabling settings that require optional permission which is not granted.'
       );
 
-      chrome.storage.sync.set({
-        PriorityWishlist: false,
-        HideNonTradingCards: false,
-        HideDlc: false,
-      });
+      settings.PriorityWishlist = false;
+      settings.HideNonTradingCards = false;
+      settings.HideDlc = false;
+      saveSettings(settings, () => {});
 
       result.status = 403;
       return result;

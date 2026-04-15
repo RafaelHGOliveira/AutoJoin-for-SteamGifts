@@ -165,6 +165,13 @@ const parse = (data) => {
       case 'wonPageGameName':
         result.wonPageGameName = dom.querySelector('.table__column__heading')?.textContent ?? '';
         break;
+      case 'username': {
+        const profileLink = dom.querySelector(
+          '.nav__button-container--notification a.nav__avatar-outer-wrap'
+        );
+        result.username = profileLink?.href?.match(/\/user\/([^/]+)/)?.[1] ?? '';
+        break;
+      }
       default:
         console.log(
           `Unknown item requested while parsing html in offscreen document: ${item}`

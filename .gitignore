@@ -7,3 +7,8 @@ CLAUDE.md
 
 # Git worktrees
 .worktrees/
+
+# Local tooling
+.agents/
+.commandcode/
+skills-lock.json

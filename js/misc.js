@@ -1,4 +1,4 @@
-chrome.storage.sync.get({ NightTheme: false }, (data) => {
+chrome.storage.local.get({ NightTheme: false }, (data) => {
   if (data.NightTheme === true) {
     const path = chrome.runtime.getURL('/css/night.css');
     const nighttheme = document.createElement('link');

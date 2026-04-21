@@ -750,7 +750,7 @@ chrome.runtime.onInstalled.addListener((updateInfo) => {
 
   if (prevVersion < parseVersion('1.5.0')) {
     console.log('Changing settings to prevent mass ban of extension users...');
-    chrome.storage.sync.set(
+    chrome.storage.local.set(
       {
         BackgroundAJ: false,
         IgnorePinnedBG: true,
@@ -771,12 +771,12 @@ chrome.runtime.onInstalled.addListener((updateInfo) => {
   }
   if (prevVersion < parseVersion('1.6.2')) {
     console.log('Changing settings of minCost to minCostBG');
-    chrome.storage.sync.get(
+    chrome.storage.local.get(
       {
         MinCost: 0,
       },
       (minCost) => {
-        chrome.storage.sync.set(
+        chrome.storage.local.set(
           {
             MinCost: 0,
             MinCostBG: minCost,

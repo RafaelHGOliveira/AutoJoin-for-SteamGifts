@@ -175,14 +175,14 @@ function modifyPageDOM(pageDOM, timeLoaded) {
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', getSettings);
+  document.addEventListener('DOMContentLoaded', loadSettingsAndStart);
 } else {
-  getSettings();
+  loadSettingsAndStart();
 }
 
-function getSettings() {
-  chrome.storage.sync.get(getSettingsDefaults(), (data) => {
-    settings = { ...getSettingsDefaults(), ...data };
+function loadSettingsAndStart() {
+  getSettings((data) => {
+    settings = data;
     loadCache();
   });
 }

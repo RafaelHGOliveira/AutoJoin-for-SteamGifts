@@ -1,6 +1,7 @@
 // Call this function when #settingsDiv is present on the page.
 
 function fillSettingsDiv(s) {
+  try {
   document.getElementById('chkAutoJoinButton').checked =
     s.AutoJoinButton;
   document.getElementById('chkAutoDescription').checked =
@@ -75,8 +76,11 @@ function fillSettingsDiv(s) {
     document.getElementById('hoursFieldBG').value = s.RepeatHoursBG;
   }
   document.getElementById('chkAutoRedeemKey').checked = s.AutoRedeemKey;
-
-  settingsAttachEventListeners();
+  } catch (err) {
+    console.error('[AutoJoin] fillSettingsDiv error:', err);
+  } finally {
+    settingsAttachEventListeners();
+  }
 }
 
 function readSettingsFromDOM() {
@@ -142,20 +146,20 @@ function settingsAttachEventListeners() {
   const saveButtonEl = document.getElementById('btnSetSave');
   saveButtonEl.onclick = () => {
     const settingsToSave = readSettingsFromDOM();
+    saveButtonEl.disabled = true;
     saveSettings(settingsToSave, () => {
-      if (
-        document.location.protocol !== 'http:' &&
-        document.location.protocol !== 'https:'
-      ) {
-        saveButtonEl.innerText = 'Settings Saved!';
-        saveButtonEl.disabled = true;
-        setTimeout(() => {
+      saveButtonEl.innerText = 'Settings Saved!';
+      setTimeout(() => {
+        if (
+          document.location.protocol === 'http:' ||
+          document.location.protocol === 'https:'
+        ) {
+          window.location.reload();
+        } else {
           saveButtonEl.innerText = 'Save';
           saveButtonEl.disabled = false;
-        }, 500);
-      } else {
-        window.location.reload();
-      }
+        }
+      }, 500);
     });
   };
 

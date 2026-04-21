@@ -64,11 +64,37 @@ function getSettingsDefaults() {
 }
 
 function getSettings(callback) {
-  chrome.storage.sync.get(getSettingsDefaults(), (data) => {
-    callback({ ...getSettingsDefaults(), ...data });
+  chrome.storage.local.get(getSettingsDefaults(), (data) => {
+    if (chrome.runtime.lastError) {
+      console.error('[AutoJoin] storage.local.get failed:', chrome.runtime.lastError);
+      callback(getSettingsDefaults());
+      return;
+    }
+    // One-shot migration: if local is all-defaults but sync has data, copy it over
+    const defaults = getSettingsDefaults();
+    const allDefault = Object.keys(defaults).every(
+      (k) => JSON.stringify(data[k]) === JSON.stringify(defaults[k])
+    );
+    if (allDefault && chrome.storage.sync) {
+      chrome.storage.sync.get(defaults, (syncData) => {
+        if (chrome.runtime.lastError || !syncData) {
+          callback({ ...defaults, ...data });
+          return;
+        }
+        const merged = { ...defaults, ...syncData };
+        chrome.storage.local.set(merged, () => callback(merged));
+      });
+      return;
+    }
+    callback({ ...defaults, ...data });
   });
 }
 
 function saveSettings(settingsObj, callback) {
-  chrome.storage.sync.set(settingsObj, callback || (() => {}));
+  chrome.storage.local.set(settingsObj, () => {
+    if (chrome.runtime.lastError) {
+      console.error('[AutoJoin] storage.local.set failed:', chrome.runtime.lastError);
+    }
+    if (callback) callback();
+  });
 }

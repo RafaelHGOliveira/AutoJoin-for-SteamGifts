@@ -643,7 +643,7 @@ const settingsloaded = async () => {
       await scanpage(html); // scan this page that was already loaded to get info above
       let i = 0;
       if (useWishlistPriorityForMainBG) {
-        linkToUse = link;
+        linkToUse = bgLink;
         i = 1;
       }
       if (currPoints >= settings.PointsToPreserve) {

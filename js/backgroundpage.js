@@ -7,7 +7,6 @@ if (typeof importScripts === 'function') {
   importScripts('parseHTML.js');
 }
 
-
 /* Offscreen weirdness, to use DOMParser and Audio with manifest v3...*/
 let creating;
 const setupOffscreenDocument = async (path) => {

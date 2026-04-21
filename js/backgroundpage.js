@@ -42,19 +42,21 @@ const parseHTML = (html) => {
     return Promise.resolve(parse(html));
   }
 
-  return new Promise(async (resolve, reject) => {
+  return new Promise(async (resolve) => {
     await setupOffscreenDocument('html/offscreen.html');
 
-    const onDone = (result) => {
+    const requestId = crypto.randomUUID();
+    const onDone = (msg) => {
+      if (!msg || msg._parseRequestId !== requestId) return;
       chrome.runtime.onMessage.removeListener(onDone);
-      resolve(result);
+      resolve(msg._parseResult);
     };
     chrome.runtime.onMessage.addListener(onDone);
-    // Send message to offscreen document
     chrome.runtime.sendMessage({
       task: 'parse',
       target: 'offscreen',
       data: html,
+      requestId,
     });
   });
 };
@@ -83,10 +85,6 @@ let pages = 1;
 let pagestemp = pages;
 let token = '';
 let mylevel = 0;
-let timepassed = 0;
-let timetopass = 100;
-let justLaunched = true;
-let thisVersion = 20170929;
 let totalWishlistGAcnt = 0;
 let useWishlistPriorityForMainBG = false;
 let currPoints = 0;
@@ -186,25 +184,20 @@ const findAndRedeemKeys = async (keys) => {
     if (res.ok) {
       const json = await res.json();
 
-      // This should be remade
-      const data = JSON.stringify(json);
-      const key = data.substr(
-        data.indexOf('?key=') + 5,
-        data.substr(data.indexOf('?key=')).indexOf('\\') - 5
-      ); // RIP
-      latestSteamGiftsKeyRequestResponse = data; // for debugging
+      latestSteamGiftsKeyRequestResponse = JSON.stringify(json); // for debugging
+      const key = json?.key ?? (JSON.stringify(json).match(/\?key=([A-Za-z0-9-]+)/)?.[1] ?? '');
 
       // Check key format
       if (/^[a-zA-Z0-9]{4,6}\-[a-zA-Z0-9]{4,6}\-[a-zA-Z0-9]{4,6}$/.test(key)) {
-        const res = await fetch('//store.steampowered.com');
+        const res = await fetch('https://store.steampowered.com/', {
+          credentials: 'include',
+        });
         const data = await res.text();
 
         // Check if user is logged in on Steam
         if (data.indexOf('playerAvatar') != -1) {
-          const steamSessionId = data.substr(
-            data.indexOf('g_sessionID') + 15,
-            24
-          );
+          const sessionMatch = data.match(/g_sessionID\s*=\s*"([^"]+)"/);
+          const steamSessionId = sessionMatch ? sessionMatch[1] : '';
 
           const formData = new FormData();
           formData.append('product_key', key);
@@ -213,6 +206,7 @@ const findAndRedeemKeys = async (keys) => {
             'https://store.steampowered.com/account/ajaxregisterkey/',
             {
               method: 'post',
+              credentials: 'include',
               body: formData,
             }
           );
@@ -569,19 +563,14 @@ const settingsloaded = async () => {
   if (pages < 2 && useWishlistPriorityForMainBG) {
     pages = 2;
   }
-  timetopass = 10 * settings.RepeatHoursBG;
-  if (justLaunched || settings.RepeatHoursBG === 0) {
-    // settings.RepeatHoursBG == 0 means it should autojoin every time
-    justLaunched = false;
-    timepassed = timetopass;
-  } else {
-    timepassed += 5;
-  }
+  const { lastAutoJoinTime = 0 } = await chrome.storage.local.get('lastAutoJoinTime');
+  const shouldAutojoin = settings.RepeatHoursBG === 0 ||
+    (Date.now() - lastAutoJoinTime) >= settings.RepeatHoursBG * 3600 * 1000;
 
   let result = { won: false, myPoints: 0, myLevel: 0, token: '' };
 
   /* If background autojoin is disabled or not enough time passed only check if won */
-  if (settings.BackgroundAJ === false || timepassed < timetopass) {
+  if (settings.BackgroundAJ === false || !shouldAutojoin) {
     const res = await fetch(link + 1);
     const html = await res.text();
     result = await parseHTML({
@@ -609,7 +598,7 @@ const settingsloaded = async () => {
     }
   } else {
     /* Else check if won first (since pop-up disappears after first view), then start scanning pages */
-    timepassed = 0; // reset timepassed
+    await chrome.storage.local.set({ lastAutoJoinTime: Date.now() });
     const bgLink = `https://www.steamgifts.com/giveaways/search?type=${settings.PageForBG}&level_min=${settings.MinLevelBG}&level_max=${settings.LastKnownLevel}&page=`;
     const wishLink = `https://www.steamgifts.com/giveaways/search?type=wishlist&level_min=${settings.MinLevelBG}&level_max=${settings.LastKnownLevel}&page=`;
     let linkToUse = '';

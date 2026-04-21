@@ -200,20 +200,20 @@ function settingsAttachEventListeners() {
         try {
           const data = JSON.parse(ev.target.result);
           if (data.type !== 'autojoin-sg-account-settings' || !data.settings) {
-            alert('Invalid file format.');
-            return;
-          }
-          // eslint-disable-next-line no-restricted-globals
-          if (!confirm('Overwrite current settings with imported data?')) {
+            btnImport.innerText = 'Invalid file!';
+            setTimeout(() => { btnImport.innerText = 'Import'; }, 2000);
             return;
           }
           const merged = { ...getSettingsDefaults(), ...data.settings };
           saveSettings(merged, () => {
             fillSettingsDiv(merged);
-            alert('Settings imported.');
+            btnImport.innerText = 'Imported!';
+            setTimeout(() => { btnImport.innerText = 'Import'; }, 2000);
           });
         } catch (err) {
-          alert(`Failed to import: ${err.message}`);
+          console.error('[AutoJoin] import failed:', err);
+          btnImport.innerText = 'Import failed!';
+          setTimeout(() => { btnImport.innerText = 'Import'; }, 2000);
         } finally {
           fileInput.value = '';
         }

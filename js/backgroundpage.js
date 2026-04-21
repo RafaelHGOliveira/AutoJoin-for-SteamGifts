@@ -184,25 +184,20 @@ const findAndRedeemKeys = async (keys) => {
     if (res.ok) {
       const json = await res.json();
 
-      // This should be remade
-      const data = JSON.stringify(json);
-      const key = data.substr(
-        data.indexOf('?key=') + 5,
-        data.substr(data.indexOf('?key=')).indexOf('\\') - 5
-      ); // RIP
-      latestSteamGiftsKeyRequestResponse = data; // for debugging
+      latestSteamGiftsKeyRequestResponse = JSON.stringify(json); // for debugging
+      const key = json?.key ?? (JSON.stringify(json).match(/\?key=([A-Za-z0-9-]+)/)?.[1] ?? '');
 
       // Check key format
       if (/^[a-zA-Z0-9]{4,6}\-[a-zA-Z0-9]{4,6}\-[a-zA-Z0-9]{4,6}$/.test(key)) {
-        const res = await fetch('//store.steampowered.com');
+        const res = await fetch('https://store.steampowered.com/', {
+          credentials: 'include',
+        });
         const data = await res.text();
 
         // Check if user is logged in on Steam
         if (data.indexOf('playerAvatar') != -1) {
-          const steamSessionId = data.substr(
-            data.indexOf('g_sessionID') + 15,
-            24
-          );
+          const sessionMatch = data.match(/g_sessionID\s*=\s*"([^"]+)"/);
+          const steamSessionId = sessionMatch ? sessionMatch[1] : '';
 
           const formData = new FormData();
           formData.append('product_key', key);
@@ -211,6 +206,7 @@ const findAndRedeemKeys = async (keys) => {
             'https://store.steampowered.com/account/ajaxregisterkey/',
             {
               method: 'post',
+              credentials: 'include',
               body: formData,
             }
           );

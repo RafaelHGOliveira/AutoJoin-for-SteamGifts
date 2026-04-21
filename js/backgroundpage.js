@@ -31,19 +31,21 @@ const setupOffscreenDocument = async (path) => {
 };
 
 const parseHTML = (html) => {
-  return new Promise(async (resolve, reject) => {
+  return new Promise(async (resolve) => {
     await setupOffscreenDocument('html/offscreen.html');
 
-    const onDone = (result) => {
+    const requestId = crypto.randomUUID();
+    const onDone = (msg) => {
+      if (!msg || msg._parseRequestId !== requestId) return;
       chrome.runtime.onMessage.removeListener(onDone);
-      resolve(result);
+      resolve(msg._parseResult);
     };
     chrome.runtime.onMessage.addListener(onDone);
-    // Send message to offscreen document
     chrome.runtime.sendMessage({
       task: 'parse',
       target: 'offscreen',
       data: html,
+      requestId,
     });
   });
 };
@@ -65,10 +67,6 @@ let pages = 1;
 let pagestemp = pages;
 let token = '';
 let mylevel = 0;
-let timepassed = 0;
-let timetopass = 100;
-let justLaunched = true;
-let thisVersion = 20170929;
 let totalWishlistGAcnt = 0;
 let useWishlistPriorityForMainBG = false;
 let currPoints = 0;
@@ -566,19 +564,14 @@ const settingsloaded = async () => {
   if (pages < 2 && useWishlistPriorityForMainBG) {
     pages = 2;
   }
-  timetopass = 10 * settings.RepeatHoursBG;
-  if (justLaunched || settings.RepeatHoursBG === 0) {
-    // settings.RepeatHoursBG == 0 means it should autojoin every time
-    justLaunched = false;
-    timepassed = timetopass;
-  } else {
-    timepassed += 5;
-  }
+  const { lastAutoJoinTime = 0 } = await chrome.storage.local.get('lastAutoJoinTime');
+  const shouldAutojoin = settings.RepeatHoursBG === 0 ||
+    (Date.now() - lastAutoJoinTime) >= settings.RepeatHoursBG * 3600 * 1000;
 
   let result = { won: false, myPoints: 0, myLevel: 0, token: '' };
 
   /* If background autojoin is disabled or not enough time passed only check if won */
-  if (settings.BackgroundAJ === false || timepassed < timetopass) {
+  if (settings.BackgroundAJ === false || !shouldAutojoin) {
     const res = await fetch(link + 1);
     const html = await res.text();
     result = await parseHTML({
@@ -605,12 +598,12 @@ const settingsloaded = async () => {
     }
   } else {
     /* Else check if won first (since pop-up disappears after first view), then start scanning pages */
-    timepassed = 0; // reset timepassed
-    const link = `https://www.steamgifts.com/giveaways/search?type=${settings.PageForBG}&level_min=${settings.MinLevelBG}&level_max=${settings.LastKnownLevel}&page=`;
+    await chrome.storage.local.set({ lastAutoJoinTime: Date.now() });
+    const bgLink = `https://www.steamgifts.com/giveaways/search?type=${settings.PageForBG}&level_min=${settings.MinLevelBG}&level_max=${settings.LastKnownLevel}&page=`;
     const wishLink = `https://www.steamgifts.com/giveaways/search?type=wishlist&level_min=${settings.MinLevelBG}&level_max=${settings.LastKnownLevel}&page=`;
     let linkToUse = '';
     if (useWishlistPriorityForMainBG) linkToUse = wishLink;
-    else linkToUse = link;
+    else linkToUse = bgLink;
     arr.length = 0;
 
     const res = await fetch(linkToUse + 1);

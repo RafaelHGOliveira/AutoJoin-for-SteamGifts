@@ -2,7 +2,7 @@ chrome.runtime.onMessage.addListener((msg) => {
   switch (msg.task) {
     case 'parse':
       const data = parse(msg.data);
-      chrome.runtime.sendMessage(data);
+      chrome.runtime.sendMessage({ _parseRequestId: msg.requestId, _parseResult: data });
       break;
     case 'audio':
       const audio = new Audio('/media/audio.mp3');
